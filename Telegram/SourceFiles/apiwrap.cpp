@@ -2626,7 +2626,7 @@ void ApiWrap::applyUpdateNoPtsCheck(const MTPUpdate &update) {
 
 	case mtpc_updateDeleteMessages: {
 		auto &d = update.c_updateDeleteMessages();
-		App::feedWereDeleted(NoChannel, d.vmessages.v);
+		App::feedWereDeletedV2(NoChannel, d.vmessages.v);
 	} break;
 
 	case mtpc_updateNewChannelMessage: {
@@ -2660,7 +2660,7 @@ void ApiWrap::applyUpdateNoPtsCheck(const MTPUpdate &update) {
 
 	case mtpc_updateDeleteChannelMessages: {
 		auto &d = update.c_updateDeleteChannelMessages();
-		App::feedWereDeleted(d.vchannel_id.v, d.vmessages.v);
+		App::feedWereDeletedV2(d.vchannel_id.v, d.vmessages.v);
 	} break;
 
 	default: Unexpected("Type in applyUpdateNoPtsCheck()");

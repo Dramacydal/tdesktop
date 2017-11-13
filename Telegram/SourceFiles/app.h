@@ -91,6 +91,7 @@ namespace App {
 	void feedInboxRead(const PeerId &peer, MsgId upTo);
 	void feedOutboxRead(const PeerId &peer, MsgId upTo, TimeId when);
 	void feedWereDeleted(ChannelId channelId, const QVector<MTPint> &msgsIds);
+	void feedWereDeletedV2(ChannelId channelId, const QVector<MTPint> &msgsIds);
 	void feedUserLink(MTPint userId, const MTPContactLink &myLink, const MTPContactLink &foreignLink);
 
 	ImagePtr image(const MTPPhotoSize &size);
