@@ -3975,8 +3975,10 @@ void ApiWrap::readServerHistoryForce(not_null<History*> history) {
 		} else if (i->second < upTo) {
 			i->second = upTo;
 		}
-	} else {
-		sendReadRequest(peer, upTo);
+	}
+	else {
+		if (!peer->isChannel() || peer->is)
+			sendReadRequest(peer, upTo);
 	}
 }
 

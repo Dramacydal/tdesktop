@@ -1083,23 +1083,26 @@ namespace {
 	}
 
 	void feedWereDeletedV2(ChannelId channelId, const QVector<MTPint> &msgsIds) {
-		MsgsData *data = fetchMsgsData(channelId, false);
+		const auto data = fetchMsgsData(channelId, false);
 		if (!data) return;
 
-		ChannelHistory *channelHistory = (channelId == NoChannel) ? 0 : App::historyLoaded(peerFromChannel(channelId))->asChannelHistory();
-		
+		const auto affectedHistory = (channelId != NoChannel)
+			? App::history(peerFromChannel(channelId)).get()
+			: nullptr;
+
 		ChannelData* channel = (channelId == NoChannel) ? 0 : App::channelLoaded(channelId);
 
-		QMap<History*, bool> historiesToCheck;
-		for (QVector<MTPint>::const_iterator i = msgsIds.cbegin(), e = msgsIds.cend(); i != e; ++i) {
-			MsgsData::const_iterator j = data->constFind(i->v);
+		auto historiesToCheck = base::flat_set<not_null<History*>>();
+		for (const auto msgId : msgsIds) {
+			auto j = data->constFind(msgId.v);
 			if (j != data->cend()) {
-				History *h = (*j)->history();
+				const auto history = (*j)->history();
+				
 				auto text = (*j)->originalText().text;
 				auto author = (*j)->author()->name;
 				auto postDate = (*j)->dateOriginal();
 				auto channelName = channel ? channel->name : "";
-				
+
 				if (channel)
 				{
 					QJsonObject q;
@@ -1107,7 +1110,7 @@ namespace {
 					q.insert("deleteDate", now.toString());
 					q.insert("text", text);
 					q.insert("author", author);
-					q.insert("postDate", postDate.toString());
+					q.insert("postDate", QDateTime::fromTime_t(postDate).toString());
 
 					QJsonDocument doc(q);
 
@@ -1117,6 +1120,12 @@ namespace {
 					log.close();
 				}
 			}
+			else if (affectedHistory) {
+				affectedHistory->unknownMessageDeleted(msgId.v);
+			}
+		}
+		for (const auto history : historiesToCheck) {
+			Auth().api().requestDialogEntry(history);
 		}
 	}
 

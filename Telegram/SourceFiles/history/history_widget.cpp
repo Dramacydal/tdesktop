@@ -1245,7 +1245,7 @@ void HistoryWidget::updateSendAction(
 			using Type = SendAction::Type;
 			MTPsendMessageAction action;
 			switch (type) {
-			case Type::Typing: action = MTP_sendMessageTypingAction(); break;
+			case Type::Typing: if (!peer->isUser()) return; action = MTP_sendMessageTypingAction(); break;
 			case Type::RecordVideo: action = MTP_sendMessageRecordVideoAction(); break;
 			case Type::UploadVideo: action = MTP_sendMessageUploadVideoAction(MTP_int(progress)); break;
 			case Type::RecordVoice: action = MTP_sendMessageRecordAudioAction(); break;
