@@ -3977,7 +3977,7 @@ void ApiWrap::readServerHistoryForce(not_null<History*> history) {
 		}
 	}
 	else {
-		if (!peer->isChannel() || peer->is)
+		if (!peer->isMegagroup())
 			sendReadRequest(peer, upTo);
 	}
 }

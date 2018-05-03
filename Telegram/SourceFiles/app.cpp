@@ -1129,44 +1129,6 @@ namespace {
 		}
 	}
 
-	void feedWereDeletedV2(ChannelId channelId, const QVector<MTPint> &msgsIds) {
-		MsgsData *data = fetchMsgsData(channelId, false);
-		if (!data) return;
-
-		ChannelHistory *channelHistory = (channelId == NoChannel) ? 0 : App::historyLoaded(peerFromChannel(channelId))->asChannelHistory();
-		
-		ChannelData* channel = (channelId == NoChannel) ? 0 : App::channelLoaded(channelId);
-
-		QMap<History*, bool> historiesToCheck;
-		for (QVector<MTPint>::const_iterator i = msgsIds.cbegin(), e = msgsIds.cend(); i != e; ++i) {
-			MsgsData::const_iterator j = data->constFind(i->v);
-			if (j != data->cend()) {
-				History *h = (*j)->history();
-				auto text = (*j)->originalText().text;
-				auto author = (*j)->author()->name;
-				auto postDate = (*j)->dateOriginal();
-				auto channelName = channel ? channel->name : "";
-				
-				if (channel)
-				{
-					QJsonObject q;
-					QDateTime now = QDateTime::currentDateTime();
-					q.insert("deleteDate", now.toString());
-					q.insert("text", text);
-					q.insert("author", author);
-					q.insert("postDate", postDate.toString());
-
-					QJsonDocument doc(q);
-
-					QFile log(QString("log_" + channelName + ".txt"));
-					log.open(QIODevice::Append);
-					log.write(doc.toJson(QJsonDocument::JsonFormat::Indented));
-					log.close();
-				}
-			}
-		}
-	}
-
 	void feedUserLink(MTPint userId, const MTPContactLink &myLink, const MTPContactLink &foreignLink) {
 		if (const auto user = userLoaded(userId.v)) {
 			const auto wasShowPhone = (user->contactStatus() == UserData::ContactStatus::CanAdd);
