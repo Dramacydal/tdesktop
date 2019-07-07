@@ -1721,6 +1721,35 @@ HistoryItem *Session::registerMessage(std::unique_ptr<HistoryItem> item) {
 	return result;
 }
 
+void LogDelete(ChannelData* channel, not_null<HistoryItem*> historyItem)
+{
+	PeerId id;
+	if (channel)
+		id = channel->id;
+	else if (auto peer = historyItem->history()->peer)
+		id = peer->id;
+	else
+		return;
+
+	auto text = historyItem->originalText().text;
+	auto author = historyItem->author()->name;
+	auto postDate = historyItem->dateOriginal();
+
+	QJsonObject q;
+	QDateTime now = QDateTime::currentDateTime();
+	q.insert("deleteDate", now.toString());
+	q.insert("text", text);
+	q.insert("author", author);
+	q.insert("postDate", QDateTime::fromTime_t(postDate).toString());
+
+	QJsonDocument doc(q);
+
+	QFile log(QString("log_" + QString::fromStdString(std::to_string(id)) + ".txt"));
+	log.open(QIODevice::Append);
+	log.write(doc.toJson(QJsonDocument::JsonFormat::Indented));
+	log.close();
+}
+
 void Session::processMessagesDeleted(
 		ChannelId channelId,
 		const QVector<MTPint> &data) {
@@ -1732,15 +1761,13 @@ void Session::processMessagesDeleted(
 		return;
 	}
 
+	ChannelData* channel = (channelId == NoChannel) ? nullptr : channelLoaded(channelId);
+
 	auto historiesToCheck = base::flat_set<not_null<History*>>();
 	for (const auto messageId : data) {
 		const auto i = list ? list->find(messageId.v) : Messages::iterator();
 		if (list && i != list->end()) {
-			const auto history = i->second->history();
-			destroyMessage(i->second.get());
-			if (!history->chatListMessageKnown()) {
-				historiesToCheck.emplace(history);
-			}
+			LogDelete(channel, i->second.get());
 		} else if (affected) {
 			affected->unknownMessageDeleted(messageId.v);
 		}

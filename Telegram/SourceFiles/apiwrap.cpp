@@ -6058,7 +6058,8 @@ void ApiWrap::readServerHistoryForce(not_null<History*> history) {
 			i->second = upTo;
 		}
 	} else {
-		sendReadRequest(peer, upTo);
+		if (!peer->isMegagroup())
+			sendReadRequest(peer, upTo);
 	}
 }
 // // #feed
